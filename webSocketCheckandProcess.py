@@ -14,7 +14,21 @@ SERVER_FILE =   "server.php"
 #WebSocket Connection Object
 WS = False
 
-
+##Checks for the existance of a Unix PID
+def check_pid(pid):
+    try:
+        os.kill(pid, 0)
+    except OSError as ex:
+        ##LOGGER
+        template = "An exception of type {0} occured.\nArguments:\n{1!r}"
+        message = template.format(type(ex).__name__, ex.args)
+        print (message)
+        ##LOGGER
+        return False
+    else:
+        return True
+    
+    
 def checkWebsocketServer():
     global WS
     #LOG Connect to Server
@@ -59,18 +73,24 @@ def checkWebsocketServer():
             print ("Not Empty and isDigit :: GOT PID")
             ##NOW Kill the existing Running Server
             os.kill(int(pid), signal.SIGTERM)
-            try: 
-                os.kill(int(pid), 0)
-                raise Exception("""wasn't able to kill the process HINT:use signal.SIGKILL or signal.SIGABORT""")
+            
+            if check_pid(pid) is True :
+                print ('Process is Still Running')
+                ##LOGGER 
+                ##Failed
+                ##??
+            else:
+                print ('No Process With pid %s '% (pid))
                 
-            except OSError as ex:
-                template = "An exception of type {0} occured.\nArguments:\n{1!r}"
-                message = template.format(type(ex).__name__, ex.args)
-                print (message)
         else:
             #NO PID Exists # There is no Server Running
             print ("Empty :: NO Server Running")
             
+        ##Start the WebSocket Server
+        ##At this point either there is NO WebSocekt Server Runnning or
+        ##the Exisitng WebSocket Server (process) has been Killed 
+        
+        
         
     print ('--Function Ends--')
 
