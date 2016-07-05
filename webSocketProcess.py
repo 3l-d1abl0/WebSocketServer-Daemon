@@ -108,73 +108,75 @@ def new_server_check():
         
 
 if __name__ == "__main__":
-    
-    print ('--MAIN--')
-    #Ping the WebSoket Server
-    ping_result = ping_websocketserver()
-    #Testing Setting ping_result to False
-    ping_result = False
-    #If Cannot Connect to WebSocketServer
-    if ping_result is False :
-        to_spawn = True
-        #Check if Process (Server) is Running
-        print ('Checking is Server Process is running !')
-        pid = check_websocketserver()
-        print ('OP :PID : ',pid)       
+    while True:
         
-        #IF PID not False then its Valid
-        if pid: 
-            print('PID :',pid)
-            print('Killing the existing process with PId : ',pid )
-            #Server is Running
-            #NOW Kill the existing Running Server
-            os.kill(int(pid), signal.SIGTERM)   #os.kill(int(pid), 9)
-            print ('Checking if the Process is still Running ... ')           
-            time.sleep(5)
-            #Check if the Server was Successfully Killed
-            process_path = "/proc/{}".format(pid)
-            if os.path.exists(process_path):
-                to_spawn = False
-                print('Could not kill Process with PID %s'%(pid))
-                print('Error --')
-                ##LOGGER##FAILED
-                ##BreakLoop??#NoSpawn##
-            else:
-                to_spawn = True
-                print('SuccessFully Killed ! No process with PID Exist')
-        
-        
-        #Check if new Server Should Spawn
-        if not to_spawn:
-            print('ERROR :: Failed to Kill Existing Websocket Server !')
-            ##LOGGER##FAILED
-            
-        else:
-            #Spawn a New Server
-            print ('Spawning A NEw Server !')
-            #print('Breaking....')
-            #sys.exit(0)
-            spawn_result = spawn()    
-            
-            if spawn_result:
-                print('Command to Spawn WebSocketServer ran Successfully')
-                print('Wait for Server to initalize, before checking !')
-                time.sleep(30)
-                print('Checking if Server is Running ... ')
-                
-                #Check is Server is actually running
-                if new_server_check():
-                    #Server is Up and Running
-                    print('%s : Server is Up and Runnig ... \n' % ( time.ctime(time.time()) ))
-                else:
-                    print('%s : ERROR Failed to Start a NewServer ... \n' % ( time.ctime(time.time()) ))
+        print ('--MAIN--')
+        #Ping the WebSoket Server
+        ping_result = ping_websocketserver()
+        #Testing Setting ping_result to False
+        ping_result = False
+        #If Cannot Connect to WebSocketServer
+        if ping_result is False :
+            to_spawn = True
+            #Check if Process (Server) is Running
+            print ('Checking is Server Process is running !')
+            pid = check_websocketserver()
+            print ('OP :PID : ',pid)       
+
+            #IF PID not False then its Valid
+            if pid: 
+                print('PID :',pid)
+                print('Killing the existing process with PId : ',pid )
+                #Server is Running
+                #NOW Kill the existing Running Server
+                os.kill(int(pid), signal.SIGTERM)   #os.kill(int(pid), 9)
+                print ('Checking if the Process is still Running ... ')           
+                time.sleep(5)
+                #Check if the Server was Successfully Killed
+                process_path = "/proc/{}".format(pid)
+                if os.path.exists(process_path):
+                    to_spawn = False
+                    print('Could not kill Process with PID %s'%(pid))
+                    print('Error --')
                     ##LOGGER##FAILED
-            else:
-                print ('COMMAND FAILED ! Could not start new Server Instance !')
+                    ##BreakLoop??#NoSpawn##
+                else:
+                    to_spawn = True
+                    print('SuccessFully Killed ! No process with PID Exist')
+
+
+            #Check if new Server Should Spawn
+            if not to_spawn:
+                print('ERROR :: Failed to Kill Existing Websocket Server !')
                 ##LOGGER##FAILED
-    
-    
-    else:   #ping_result is True
-        print ('WebSocketServer is Up and Running & Listening to Connections ! ')
-    
-    print ('--MAIN ENDS--')
+
+            else:
+                #Spawn a New Server
+                print ('Spawning A NEw Server !')
+                #print('Breaking....')
+                #sys.exit(0)
+                spawn_result = spawn()    
+
+                if spawn_result:
+                    print('Command to Spawn WebSocketServer ran Successfully')
+                    print('Wait for Server to initalize, before checking !')
+                    time.sleep(15)
+                    print('Checking if Server is Running ... ')
+
+                    #Check is Server is actually running
+                    if new_server_check():
+                        #Server is Up and Running
+                        print('%s : Server is Up and Runnig ... \n' % ( time.ctime(time.time()) ))
+                    else:
+                        print('%s : ERROR Failed to Start a NewServer ... \n' % ( time.ctime(time.time()) ))
+                        ##LOGGER##FAILED
+                else:
+                    print ('COMMAND FAILED ! Could not start new Server Instance !')
+                    ##LOGGER##FAILED
+
+
+        else:   #ping_result is True
+            print ('WebSocketServer is Up and Running & Listening to Connections ! ')
+
+        print ('--MAIN ENDS--')
+        time.sleep(10)
