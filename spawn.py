@@ -11,7 +11,25 @@ _FILE = "server.php"
 _SCREEN_NAME ="websocketserver"
 _WS = False
 _WEBSOCKET_URL = "ws://localhost:8080/serverPush"
+_CWD = '/home/ubuntu/background/Demo/'
 
+#Fix for Python 2
+def new_server_check(self):
+    command = 'screen -ls'
+    process = subprocess.Popen(command, shell=True,  stdout=subprocess.PIPE)
+    op = process.communicate()[0]
+    #Close the Pipe
+    process.stdout.close()
+    #check if _SCREEN_NAME is in output
+    if "."+_SCREEN_NAME+"\t(" in op.decode('ascii'):
+        _LOGGER.info('Screen Session is Running ... ')
+        return self.ping_websocketserver()
+    else:
+        #No Screen Started for Server
+        _LOGGER.warn('Screen session couldn\'t be started ... ')
+        return False
+
+#Works for Python 3 #check_output not supported in python 2
 def server_check(name):
         var = subprocess.check_output(["screen -ls; true"],shell=True)
         if "."+name+"\t(" in var.decode('ascii'):
@@ -46,7 +64,7 @@ def server_check(name):
 
 def spawn():
     #Form the proper Command
-    command = "screen -dmS websocketserver php {}".format(_FILE)
+    command = "screen -dmS websocketserver php {0}".format(_FILE)
     
     print ('Command: ', command)
     
