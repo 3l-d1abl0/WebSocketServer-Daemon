@@ -35,6 +35,9 @@ _CWD='/'
 _WS = False
 #Time interval to check server (in seconds)
 _INTERVAL = 10
+#Set TimeZone for LOf Time
+os.environ['TZ'] = 'Asia/Kolkata'
+
 
 def setup_logger():
     global _LOGGER
@@ -44,8 +47,7 @@ def setup_logger():
     #Set the FileHandler for Logger
     handler = logging.FileHandler(_LOG_FILE)
     #Set The Logging Format
-    #handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s', '%d-%m-%Y %H:%M:%S'))
-    handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', '%d-%m-%Y %H:%M:%S'))
+    handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', '%d-%m-%Y %H:%M:%S  %Z%z'))
     _LOGGER.addHandler(handler)
     
     return handler
@@ -92,11 +94,8 @@ class Monitor():
         command = "ps aux | grep \"{}\" | grep -v  \"/bin/sh\" | grep -v \"grep\" | head -1 | awk '{{ print $2 }}' ".format(_SERVER_FILE)
         _LOGGER.info('Command: %s'%(command))
         process = subprocess.Popen(command, shell=True,  stdout=subprocess.PIPE)
-        #Gives bytes, which is a binary sequence of bytes rather than a string of Unicode characters
         op = process.communicate()[0]
-        #Close the Pipe
         process.stdout.close()
-        #Decode to ASCII ## EXCEPTION if its HEX or any other Format
         pid = op.decode('ascii').strip()
         _LOGGER.info('Decoded PID : %s'%(pid))
 
@@ -110,19 +109,12 @@ class Monitor():
 
     ##Tries to Start a WebSocketServer via Screen Session
     def spawn(self):
-        #Form the proper Command
         command = "screen -dmS websocketserver php {}".format(_SERVER_FILE)
         _LOGGER.info('Command : %s'%(command))
 
         process = subprocess.Popen(command, shell=True, cwd=_CWD, stdout=subprocess.PIPE)
-        #Gives bytes, which is a binary sequence of bytes rather than a string of Unicode characters
-        #op = process.communicate()[0]
-        #wait for Exitcoede
         exit_code = process.wait()
-        #Close the Pipe
         process.stdout.close()
-        #decoded_string = op.decode('ascii')
-        #print('Decoded String : ', decoded_string)
 
         if exit_code <0:
             _LOGGER.warn('Error while executing command : EXIT_STATUS : %s'%(exit_code))
@@ -131,28 +123,26 @@ class Monitor():
             _LOGGER.info('command ran successfully ... ')
             return True
     
+    
+    
+    
     ##Checks if there is Screen Session running for WebSocketServet and tries to Connect it
     def new_server_check(self):
         var = subprocess.check_output(["screen -ls; true"],shell=True)
-        #check if _SCREEN_NAME is in output
         if "."+_SCREEN_NAME+"\t(" in var.decode('ascii'):
             _LOGGER.info('Screen Session is Running ... ')
             return self.ping_websocketserver()
         
         else:
-            #No Screen Started for Server
             _LOGGER.warn('Screen session couldn\'t be started ... ')
             return False
 
     def run(self):
         while True:
-            #captures TraceBack
-            #logger.error('Failed to open file', exc_info=True)
             _LOGGER.info('--MAIN--')
-            #Ping the websocket Server
             ping_result = self.ping_websocketserver()
             
-            ##Testing Setting ping_result to False
+            ##Test
             ping_result = False
             
             #If Cannot Connect to WebSocketServer
@@ -193,7 +183,6 @@ class Monitor():
                     if spawn_result:
                         _LOGGER.info('Wait for Server to initalize, before checking it ...')
                         time.sleep(15)
-                        #Check is Server is actually running
                         _LOGGER.info('Checking if Server is Running ...')
                         if self.new_server_check():
                             #Server is Up and Running
@@ -202,8 +191,7 @@ class Monitor():
                             _LOGGER.critical('Failed to start a new server Instance ...')
                     else:
                         _LOGGER.critical('COMMAND FAILED ! Could not start new Server Instance ... ')
-                    
-            #ping_result is True   
+                     
             else:
                 _LOGGER.info('WebSocketServer is up & running & Listening to Connections ! ')        
 
